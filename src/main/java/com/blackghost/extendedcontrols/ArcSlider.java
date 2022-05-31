@@ -25,7 +25,7 @@ public class ArcSlider extends View {
 
     private static final String TAG = ArcSlider.class.getSimpleName();
 
-    private final Drawable thumbDef = ContextCompat.getDrawable(getContext(), R.drawable.ic_thumb);
+    private final Drawable thumbDef = ContextCompat.getDrawable(getContext(), R.drawable.ic_thumb_2);
 
     private Drawable thumb = thumbDef;
     private float trackWidth = 7;
@@ -34,7 +34,10 @@ public class ArcSlider extends View {
     private String helperTextSuffix = "";
     private int helperTextSize = 20;
     private float labelWidth = 7;
-    private int labelColor = ContextCompat.getColor(getContext(), R.color.red500);
+    private int labelColor = ContextCompat.getColor(getContext(), R.color.gray1);
+    private int labelPointColor = ContextCompat.getColor(getContext(), R.color.gray5);
+    private int selectorColor = ContextCompat.getColor(getContext(), R.color.red500);
+    private int valueOffset = 0;
 
     private float startAngle;
     private float sweepAngle;
@@ -58,7 +61,7 @@ public class ArcSlider extends View {
     private Paint helperTextPaint;
     private Paint helperTextRectPaint;
     private Paint helperTextRectFillPaint;
-    private Paint labelPaint;
+    private Paint labelPointPaint;
     private final RectF arcRect = new RectF();
 
     private OnChangeListener changeListener;
@@ -95,6 +98,8 @@ public class ArcSlider extends View {
                 trackColor = a.getColor(attr, trackColor);
             } if (attr == R.styleable.ArcSlider_maxProgress){
                 maxProgress = a.getInt(attr, maxProgress);
+            }  if (attr == R.styleable.ArcSlider_valueOffset){
+                valueOffset = a.getInt(attr, valueOffset);
             } if (attr == R.styleable.ArcSlider_valueTextSize){
                 helperTextSize = a.getDimensionPixelSize(attr, helperTextSize);
             } if (attr == R.styleable.ArcSlider_valueSuffix){
@@ -103,8 +108,12 @@ public class ArcSlider extends View {
                 progress = a.getInt(attr, progress);
             } if (attr == R.styleable.ArcSlider_labelWidth){
                 labelWidth = a.getDimension(attr, labelWidth);
-            } if (attr == R.styleable.ArcSlider_trackColor){
+            } if (attr == R.styleable.ArcSlider_labelColor){
                 labelColor = a.getColor(attr, labelColor);
+            } if (attr == R.styleable.ArcSlider_labelPointColor){
+                labelPointColor = a.getColor(attr, labelPointColor);
+            } if (attr == R.styleable.ArcSlider_selectorColor){
+                selectorColor = a.getColor(attr, selectorColor);
             }
 
         }
@@ -285,12 +294,12 @@ public class ArcSlider extends View {
         helperTextPaint.setStyle(Paint.Style.FILL);
         helperTextPaint.setStrokeCap(Paint.Cap.ROUND);
 
-        labelPaint = new Paint();
-        labelPaint.setAntiAlias(true);
-        labelPaint.setColor(labelColor);
-        labelPaint.setStrokeWidth(labelWidth);
-        labelPaint.setStyle(Paint.Style.STROKE);
-        labelPaint.setStrokeCap(Paint.Cap.ROUND);
+        labelPointPaint = new Paint();
+        labelPointPaint.setAntiAlias(true);
+        labelPointPaint.setColor(labelPointColor);
+        labelPointPaint.setStrokeWidth(labelWidth);
+        labelPointPaint.setStyle(Paint.Style.STROKE);
+        labelPointPaint.setStrokeCap(Paint.Cap.ROUND);
     }
 
     private void updateTrackPath(){
@@ -303,32 +312,14 @@ public class ArcSlider extends View {
     private void updateHelper(){
         helperPath = new Path();
 
-//        if  (touchTransactionOpen) {
-//            helperPath.moveTo(helperCenterX, helperCenterY);
-//            helperPath.lineTo(thumbX, thumbY);
-
-//            helperText = String.format(Locale.ENGLISH, "%d%s", progress, helperTextSuffix);
-//
-//            float helperTextWidth = helperTextPaint.measureText(helperText);
-//            Rect helperTextBounds = new Rect();
-//            helperTextPaint.getTextBounds(helperText, 0, helperText.length(), helperTextBounds);
-//            float helperTextHeight = helperTextBounds.height();
-//
-//            helperTextX = thumbX + (helperCenterX - thumbX) / 2.0f - helperTextWidth / 2;
-//            helperTextY = thumbY + (helperCenterY - thumbY) / 2.0f + helperTextHeight / 2;
-//
-//            final float rectMargin = helperTextHeight * 0.2f;
-//            helperTextRect = new RectF(helperTextX - rectMargin, helperTextY - helperTextHeight - rectMargin, helperTextX + helperTextWidth + rectMargin, helperTextY + rectMargin);
-//        }
-
         if  (touchTransactionOpen) {
             helperPath.moveTo(helperCenterX, helperCenterY);
             helperPath.lineTo(thumbX, thumbY);
 
-            helperPaint.setColor(trackColor);               // todo simplify
-            helperTextRectPaint.setColor(trackColor);
+            helperPaint.setColor(selectorColor);               // todo simplify
+            helperTextRectPaint.setColor(selectorColor);
 
-            helperText = String.format(Locale.ENGLISH, "%d%s", progress, helperTextSuffix);
+            helperText = String.format(Locale.ENGLISH, "%d%s", progress + valueOffset, helperTextSuffix);
 
             float helperTextWidth = helperTextPaint.measureText(helperText);
             Rect helperTextBounds = new Rect();
@@ -347,7 +338,7 @@ public class ArcSlider extends View {
             helperPaint.setColor(labelColor);
             helperTextRectPaint.setColor(labelColor);
 
-            helperText = String.format(Locale.ENGLISH, "%d%s", labelPosition, helperTextSuffix);
+            helperText = String.format(Locale.ENGLISH, "%d%s", labelPosition + valueOffset, helperTextSuffix);
 
             float helperTextWidth = helperTextPaint.measureText(helperText);
             Rect helperTextBounds = new Rect();
@@ -370,33 +361,27 @@ public class ArcSlider extends View {
 
         canvas.drawPath(track, trackPaint);
 
-        canvas.drawPoint(arcCenterX, arcCenterY, helperPaint);
+//        canvas.drawPoint(arcCenterX, arcCenterY, helperPaint);
         canvas.drawPath(helperPath, helperPaint);
 
-        canvas.drawPoint(labelX, labelY, labelPaint);
+        canvas.drawPoint(labelX, labelY, labelPointPaint);
 
-//        if  (touchTransactionOpen) {
-//            canvas.save();
-//            canvas.rotate(currentAngle + 180, helperTextX, helperTextY);
-//            canvas.drawText(String.format(Locale.ENGLISH, "%.0f", progress), helperTextX, helperTextY, helperTextPaint);
-//            canvas.restore();
-
-
-            canvas.drawRoundRect(helperTextRect, 5, 5, helperTextRectFillPaint);
-            canvas.drawRoundRect(helperTextRect, 5, 5, helperTextRectPaint);
-
-            canvas.drawText(helperText, helperTextX, helperTextY, helperTextPaint);
-//        }
+        canvas.drawRoundRect(helperTextRect, 5, 5, helperTextRectFillPaint);
+        canvas.drawRoundRect(helperTextRect, 5, 5, helperTextRectPaint);
+        canvas.drawText(helperText, helperTextX, helperTextY, helperTextPaint);
 
         thumb.draw(canvas);
     }
 
+    public boolean getOnTouchAction(){
+        return touchTransactionOpen;
+    }
 
     public void setOnChangeListener(OnChangeListener changeListener){
         this.changeListener = changeListener;
     }
 
-    public static interface OnChangeListener {
+    public interface OnChangeListener {
 
         void onStartTrackingTouch(ArcSlider view);
         void onProgressChanged(ArcSlider view, int progress, boolean fromUser);
@@ -404,7 +389,7 @@ public class ArcSlider extends View {
     }
 
     public void setProgress(int progress){
-        this.progress = progress;
+        this.progress = checkRangeAndTrim(progress, 0, maxProgress);
         if (changeListener != null)
             changeListener.onProgressChanged(this, progress, false);
         updateThumbPosition();
@@ -416,8 +401,9 @@ public class ArcSlider extends View {
     }
 
     public void setLabelPosition(int value){
-        labelPosition = value;
+        labelPosition = checkRangeAndTrim(value, 0, maxProgress);
         updateLabelPosition();
         updateHelper();
+        invalidate();
     }
 }

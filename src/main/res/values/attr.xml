@@ -7,11 +7,14 @@
         <attr name="trackWidth" format="dimension" />
         <attr name="trackColor" format="color" />
         <attr name="maxProgress" format="integer" />
+        <attr name="valueOffset" format="integer" />
         <attr name="valueTextSize" format="dimension" />
         <attr name="valueSuffix" format="string" />
         <attr name="progress" format="integer" />
         <attr name="labelWidth" format="dimension" />
         <attr name="labelColor" format="color" />
+        <attr name="labelPointColor" format="color" />
+        <attr name="selectorColor" format="color" />
     </declare-styleable>
 
 
