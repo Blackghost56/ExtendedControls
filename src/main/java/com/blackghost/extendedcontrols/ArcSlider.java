@@ -38,6 +38,8 @@ public class ArcSlider extends View {
     private int labelPointColor = ContextCompat.getColor(getContext(), R.color.gray5);
     private int selectorColor = ContextCompat.getColor(getContext(), R.color.red500);
     private int valueOffset = 0;
+    private int valueScaler = 1;
+    private boolean progressInversion = false;
 
     private float startAngle;
     private float sweepAngle;
@@ -98,8 +100,12 @@ public class ArcSlider extends View {
                 trackColor = a.getColor(attr, trackColor);
             } if (attr == R.styleable.ArcSlider_maxProgress){
                 maxProgress = a.getInt(attr, maxProgress);
-            }  if (attr == R.styleable.ArcSlider_valueOffset){
+            } if (attr == R.styleable.ArcSlider_progressInversion){
+                progressInversion = a.getBoolean(attr, progressInversion);
+            } if (attr == R.styleable.ArcSlider_valueOffset){
                 valueOffset = a.getInt(attr, valueOffset);
+            } if (attr == R.styleable.ArcSlider_valueScaler){
+                valueScaler = a.getInt(attr, valueScaler);
             } if (attr == R.styleable.ArcSlider_valueTextSize){
                 helperTextSize = a.getDimensionPixelSize(attr, helperTextSize);
             } if (attr == R.styleable.ArcSlider_valueSuffix){
@@ -215,7 +221,7 @@ public class ArcSlider extends View {
                         updateThumbPosition();
                         updateHelper();
                         if (changeListener != null)
-                            changeListener.onProgressChanged(this, progress, true);
+                            changeListener.onProgressChanged(this, invertProgressIfNeed(progress), true);
                     }
                     break;
                 case MotionEvent.ACTION_UP:
@@ -319,7 +325,7 @@ public class ArcSlider extends View {
             helperPaint.setColor(selectorColor);               // todo simplify
             helperTextRectPaint.setColor(selectorColor);
 
-            helperText = String.format(Locale.ENGLISH, "%d%s", progress + valueOffset, helperTextSuffix);
+            helperText = String.format(Locale.ENGLISH, "%d%s", valueScaler * progress + valueOffset, helperTextSuffix);
 
             float helperTextWidth = helperTextPaint.measureText(helperText);
             Rect helperTextBounds = new Rect();
@@ -338,7 +344,7 @@ public class ArcSlider extends View {
             helperPaint.setColor(labelColor);
             helperTextRectPaint.setColor(labelColor);
 
-            helperText = String.format(Locale.ENGLISH, "%d%s", labelPosition + valueOffset, helperTextSuffix);
+            helperText = String.format(Locale.ENGLISH, "%d%s", valueScaler * labelPosition + valueOffset, helperTextSuffix);
 
             float helperTextWidth = helperTextPaint.measureText(helperText);
             Rect helperTextBounds = new Rect();
@@ -389,7 +395,7 @@ public class ArcSlider extends View {
     }
 
     public void setProgress(int progress){
-        this.progress = checkRangeAndTrim(progress, 0, maxProgress);
+        this.progress = invertProgressIfNeed(checkRangeAndTrim(progress, 0, maxProgress));
         if (changeListener != null)
             changeListener.onProgressChanged(this, progress, false);
         updateThumbPosition();
@@ -397,13 +403,20 @@ public class ArcSlider extends View {
     }
 
     public int getProgress(){
-        return progress;
+        return invertProgressIfNeed(progress);
     }
 
     public void setLabelPosition(int value){
-        labelPosition = checkRangeAndTrim(value, 0, maxProgress);
+        labelPosition = invertProgressIfNeed(checkRangeAndTrim(value, 0, maxProgress));
         updateLabelPosition();
         updateHelper();
         invalidate();
+    }
+
+    private int invertProgressIfNeed(int progress){
+        if (progressInversion)
+            return maxProgress - progress;
+
+        return progress;
     }
 }

@@ -7,7 +7,9 @@
         <attr name="trackWidth" format="dimension" />
         <attr name="trackColor" format="color" />
         <attr name="maxProgress" format="integer" />
+        <attr name="progressInversion" format="boolean" />
         <attr name="valueOffset" format="integer" />
+        <attr name="valueScaler" format="integer" />
         <attr name="valueTextSize" format="dimension" />
         <attr name="valueSuffix" format="string" />
         <attr name="progress" format="integer" />
